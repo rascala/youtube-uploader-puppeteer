@@ -99,7 +99,9 @@ function currencyFormatter() {
 }
 
 function getHomeType(homeType) {
-    if(homeType == 'single-family') {
+    if(homeType === undefined || homeType === null) {
+        return 'Home'
+    } else if(homeType === 'single-family') {
         return 'Single-family Home'
     } else {
         return homeType.replace(/^./, str => str.toUpperCase())
@@ -234,7 +236,7 @@ async function runScript() {
                 console.log(`\n---- starting for home_id: ${home_id} ----`)
                 const video_title = `${usdFormatter.format(home.listingPrice)} ${getHomeType(home.homeType)} for sale in ${home.city} - ${home.street}`;
                 const video_description = `
-${home.notes}
+${(home.notes || '').replace('<', '').replace('>', '')}
 
 LISTING LINK:
 ${get_home_url(home)}
@@ -314,7 +316,7 @@ ${AREA_SLUGS[home['city']] !== undefined ? "For more homes in "+home['city']+", 
                 await text_box[1].type(' ')
 
                 await sleep(3_000 + Math.random() * 2_000);
-                const FOR_KIDS_RADIO_WRAPPER = '#made-for-kids-group > paper-radio-button:nth-child(2)'
+                const FOR_KIDS_RADIO_WRAPPER = '#made-for-kids-group > tp-yt-paper-radio-button:nth-child(2)'
                 await page.click(FOR_KIDS_RADIO_WRAPPER);
 
                 // add video to the second playlists
@@ -343,7 +345,7 @@ ${AREA_SLUGS[home['city']] !== undefined ? "For more homes in "+home['city']+", 
                 // await page.click('#privacy-radios > paper-radio-button:nth-child(1)');
                 await sleep(2_000 + Math.random() * 2_000);
                 await page.evaluate(() => {
-                    document.querySelectorAll('#privacy-radios > paper-radio-button')[2].click()
+                    document.querySelectorAll('#privacy-radios > tp-yt-paper-radio-button')[2].click()
                 })
                 await sleep(1_000 + Math.random() * 2_000);
 
