@@ -3,7 +3,7 @@ const child_process = require('child_process')
 
 const CountyHomesDataQuery = (county) => `
 {
-  homesSearch(variables: {counties:["${county}"], statuses:["FOR_SALE"]}, sortFields:SCORE, limit: 3000) {
+  homesSearch(variables: {counties:["${county}"], statuses:["FOR_SALE"]}, sortFields:SCORE, limit: 2000) {
     homes{
       id
       homeId
@@ -51,7 +51,7 @@ const encodedHomeDataQuery = (home_id) => encodeURIComponent(HomeDataQuery(home_
 const HomeDataQuery_COMMAND = (home_id) => `curl https://zerodown.com/graphql\\\?query=${encodedHomeDataQuery(home_id)}`
 
 function runCmd(cmd) {
-  var resp = child_process.execSync(cmd)
+  var resp = child_process.execSync(cmd, {maxBuffer: 4 * 1024 * 1024})
   var result = JSON.parse(resp.toString('UTF8'))
   return result
 }
