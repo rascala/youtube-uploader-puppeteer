@@ -1,9 +1,9 @@
 const fs = require("fs")
 const child_process = require('child_process')
 
-const CountyHomesDataQuery = (county) => `
+const HomesDataQuery = ({county, nhood, city, state}) => `
 {
-  homesSearch(variables: {counties:["${county}"], statuses:["FOR_SALE"]}, sortFields:SCORE, limit: 2000) {
+  homesSearch(variables: {${county ? 'counties:["'+county+'"],' : ''} ${nhood ? 'geoNeighborhoods:["'+nhood+'"],' : ''} ${city ? 'cities:["'+city+'"],' : ''} ${state ? 'states:["'+state+'"],' : ''}, statuses:["FOR_SALE"]}, sortFields:SCORE, limit: 2000) {
     homes{
       id
       homeId
@@ -21,10 +21,8 @@ const CountyHomesDataQuery = (county) => `
 }
 `
 
-const encodedCountyHomesDataQuery = (county) => encodeURIComponent(CountyHomesDataQuery(county))
-    .replace('(', '\\\(')
-    .replace(')', '\\\)')
-const CountyHomesDataQuery_COMMAND = (county) => `curl https://zerodown.com/graphql\\\?query=${encodedCountyHomesDataQuery(county)}`
+const encodedHomesDataQuery = (params) => encodeURIComponent(HomesDataQuery(params)).replace(/\(/g, '\\\(').replace(/\)/g, '\\\)')
+const HomesDataQuery_COMMAND = (params) => `curl https://zerodown.com/graphql\\\?query=${encodedHomesDataQuery(params)}`
 
 
 const HomeDataQuery = (home_id) => `
@@ -56,10 +54,11 @@ function runCmd(cmd) {
   return result
 }
 
-async function getCountyHomes(county) {
-  console.log('-- INFO - [CURL] - starting curl to fetch latest county homes')
-  const result = runCmd(CountyHomesDataQuery_COMMAND(county))
+async function getHomes(params) {
+  console.log('-- INFO - [CURL] - starting curl to fetch latest homes ' + JSON.stringify(params))
+  const result = runCmd(HomesDataQuery_COMMAND(params))
   console.log('-- INFO - [CURL] - done fetching')
+  console.log(result)
   return result.data.homesSearch.homes
 }
 
@@ -71,6 +70,7 @@ async function getHomeData(home_id) {
 }
 
 module.exports = { 
-  getCountyHomes,
+  getHomes,
   getHomeData,
 }
+
