@@ -11,7 +11,7 @@ const {
     downloadFile,
     deleteFile
 } = require('./s3')
-const { getCountyHomes, getHomeData } = require('./curl');
+const { getHomes, getHomeData } = require('./curl');
 const { exception } = require("console");
 
 const window_height = 768;
@@ -92,8 +92,8 @@ function currencyFormatter() {
         currency: 'USD',
     
         // These options are needed to round to whole numbers if that's what you want.
-        //minimumFractionDigits: 0, // (this suffices for whole numbers, but will print 2500.10 as $2,500.1)
-        //maximumFractionDigits: 0, // (causes 2500.99 to be printed as $2,501)
+        minimumFractionDigits: 0, // (this suffices for whole numbers, but will print 2500.10 as $2,500.1)
+        maximumFractionDigits: 0, // (causes 2500.99 to be printed as $2,501)
     });
     return formatter;
 }
@@ -118,14 +118,29 @@ async function runScript() {
     const getPostedShortsFilePath = (home_id) => `homevideos.prime/youtube.uploader/posted.shorts/${home_id}`
 
     const usdFormatter = currencyFormatter()
-    const county = process.env.COUNTY_NAME
-    const county_homes = await getCountyHomes(county)
-    const channel_name = process.env.CHANNEL_NAME
 
-    if(county === undefined || channel_name === undefined) {
-        console.log(`-- ERR - [PPTR]: COUNTY_NAME and CHANNEL_NAME env variables must be set`)
+    const channel_name = process.env.CHANNEL
+    const county = process.env.COUNTY
+    const nhood = process.env.NHOOD
+    const city = process.env.CITY
+    const state = process.env.STATE
+    if(channel_name === undefined) {
+        console.log(`-- ERR - [PPTR]: CHANNEL must be provided as an env variable`)
         exit(1)
     }
+    if(nhood) {
+        if(city === undefined || state === undefined) {
+            console.log(`-- ERR - [PPTR]: CITY and STATE must be provided as env variables if NHOOD is not defined.`)
+            exit(1)
+        }
+    } else if(county === undefined  || city == undefined) {
+        console.log(`-- ERR - [PPTR]: COUNTY or CITY must be provided as env variables if NHOOD is not defined.`)
+        exit(1)
+    }
+    const params = {nhood, county, city, state}
+    const homes = await getHomes(params)
+    console.log(`-- INFO - [CURL]: num homes = ${homes.length}`)
+
     // sample data
     // [{
     //     id: '3639951',
@@ -229,9 +244,15 @@ async function runScript() {
             if(!channel_clicked) {
                 throw new Error(`Could not change channel account to ${channel_name}`);
             }
+            try {
+                await sleep(3_000 + Math.random() * 2_000);
+                page.evaluate(() => document.querySelector('iron-overlay-backdrop').click())
+                console.log('-- INFO - [PPTR]: intro modal dismissed')
+            } catch (e) {
+                console.log('-- INFO - [PPTR]: intro modal not found')
+            }
 
-            console.log(`-- INFO - [CURL]: num homes = ${county_homes.length}`)
-            for(const home of county_homes) {
+            for(const home of homes) {
                 const home_id = home.homeId
                 console.log(`\n---- starting for home_id: ${home_id} ----`)
                 const video_title = `${usdFormatter.format(home.listingPrice)} ${getHomeType(home.homeType)} for sale in ${home.city} - ${home.street}`;
