@@ -133,7 +133,7 @@ async function runScript() {
             console.log(`-- ERR - [PPTR]: CITY and STATE must be provided as env variables if NHOOD is not defined.`)
             exit(1)
         }
-    } else if(county === undefined  || city == undefined) {
+    } else if(county === undefined && city == undefined) {
         console.log(`-- ERR - [PPTR]: COUNTY or CITY must be provided as env variables if NHOOD is not defined.`)
         exit(1)
     }
