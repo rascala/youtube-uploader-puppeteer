@@ -384,15 +384,16 @@ ${AREA_SLUGS[home['city']] !== undefined ? "For more homes in "+home['city']+", 
                     return document.querySelector('.video-url-fadeable > a').href
                 })
                 console.log(`--- youtube_url = ${youtube_url}`)
-                // upload posted file
-                await uploadData(youtube_url, getPostedFilePath(home_id))
-                await sleep(5_000);
                 
+                await sleep(2_000);
                 await page.click('#done-button');
                 await sleep(5_000 + Math.random() * 2_000);
                 // close
                 await page.click('#close-button > div');
                 
+                // upload posted file
+                await uploadData(youtube_url, getPostedFilePath(home_id))
+
                 // ---- cleanup ----
                 // delete the input file to save disk space
                 fs.unlinkSync(`data/inputs/${home_id}.mp4`)
