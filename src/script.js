@@ -184,6 +184,16 @@ async function runScript() {
                 await sleep(30_000 + Math.random() * 2_000);
             }
 
+            // try to close intro modal
+            try {
+                await sleep(2_000 + Math.random() * 2_000);
+                page.evaluate(() => document.querySelector('iron-overlay-backdrop').click())
+                console.log('-- INFO - [PPTR]: intro modal dismissed')
+            } catch (e) {
+                console.log('-- INFO - [PPTR]: intro modal not found')
+            }
+
+
             // click account button
             await sleep(3_000 + Math.random() * 2_000);
             await page.click('#avatar-btn')
