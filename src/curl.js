@@ -3,7 +3,7 @@ const child_process = require('child_process')
 
 const HomesDataQuery = ({county, nhood, city, state}) => `
 {
-  homesSearch(variables: {${county ? 'counties:["'+county+'"],' : ''} ${nhood ? 'geoNeighborhoods:["'+nhood+'"],' : ''} ${city ? 'cities:["'+city+'"],' : ''} ${state ? 'states:["'+state+'"],' : ''}, statuses:["FOR_SALE"]}, sortFields:SCORE, limit: 2000) {
+  homesSearch(variables: {${county ? 'counties:["'+county+'"],' : ''} ${nhood ? 'geoNeighborhoods:["'+nhood+'"],' : ''} ${city ? 'cities:["'+city+'"],' : ''} ${state ? 'states:["'+state+'"],' : ''}, statuses:["FOR_SALE"]}, sortFields:SCORE, limit: 50) {
     homes{
       id
       homeId
