@@ -110,10 +110,13 @@ function getHomeType(homeType) {
 
 async function runScript() {
 
+    const IS_SHORTS = process.env.VIDEO_TYPE === "shorts"
     const getInputFilePath = (home_id) => `homevideos.prime/moviepy/outputs/1920x1080/${home_id}.mp4`
-    const getInputShortsFilePath = (home_id) => `homevideos.prime/moviepy/outputs/1080x1920/${home_id}.mp4`
+    const getInputShortsFilePath = (home_id) => `homevideos.prime/moviepy/outputs/1080x1920.shorts/${home_id}.1080x1920.mp4`
     const getLockFilePath = (home_id) => `homevideos.prime/youtube.uploader/lockfiles/${home_id}`
+    const getLockFileShortsPath = (home_id) => `homevideos.prime/youtube.uploader/lockfiles.shorts/${home_id}`
     const getErrorFilePath = (home_id) => `homevideos.prime/youtube.uploader/errorfiles/${home_id}`
+    const getErrorFileShortsPath = (home_id) => `homevideos.prime/youtube.uploader/errorfiles.shorts/${home_id}`
     const getPostedFilePath = (home_id) => `homevideos.prime/youtube.uploader/posted/${home_id}`
     const getPostedShortsFilePath = (home_id) => `homevideos.prime/youtube.uploader/posted.shorts/${home_id}`
 
@@ -193,7 +196,6 @@ async function runScript() {
                 console.log('-- INFO - [PPTR]: intro modal not found')
             }
 
-
             // click account button
             await sleep(3_000 + Math.random() * 2_000);
             await page.click('#avatar-btn')
@@ -265,7 +267,10 @@ async function runScript() {
             for(const home of homes) {
                 const home_id = home.homeId
                 console.log(`\n---- starting for home_id: ${home_id} ----`)
-                const video_title = `${usdFormatter.format(home.listingPrice)} ${getHomeType(home.homeType)} for sale in ${home.city} - ${home.street}`;
+                let video_title = `${usdFormatter.format(home.listingPrice)} ${getHomeType(home.homeType)} for sale in ${home.city} - ${home.street}`;
+                if(IS_SHORTS) {
+                    video_title = video_title + ' #shorts'
+                }
                 const video_description = `
 ${(home.notes || '').replace('<', '').replace('>', '')}
 
@@ -284,11 +289,17 @@ Facebook: https://www.facebook.com/zerodownhq
 
 ${AREA_SLUGS[home['city']] !== undefined ? "For more homes in "+home['city']+", visit https://zerodown.com/"+AREA_SLUGS[home['city']] : ""}
                 `;
-            
-                const input_file = getInputFilePath(home_id)
-                const lock_file = getLockFilePath(home_id)
-                const error_file = getErrorFilePath(home_id)
-                const posted_file = getPostedFilePath(home_id)
+
+                let input_file = getInputFilePath(home_id)
+                let lock_file = getLockFilePath(home_id)
+                let error_file = getErrorFilePath(home_id)
+                let posted_file = getPostedFilePath(home_id)
+                if(IS_SHORTS) {
+                    input_file = getInputShortsFilePath(home_id)
+                    lock_file = getLockFileShortsPath(home_id)
+                    error_file = getErrorFileShortsPath(home_id)
+                    posted_file = getPostedShortsFilePath(home_id)
+                }
                 if(!(await isFileOnS3(input_file))) {
                     console.log(`-- Inputfile: ${input_file} does not exist. Skipping`)
                     continue
@@ -376,7 +387,7 @@ ${AREA_SLUGS[home['city']] !== undefined ? "For more homes in "+home['city']+", 
                 // await page.click('#privacy-radios > paper-radio-button:nth-child(1)');
                 await sleep(2_000 + Math.random() * 2_000);
                 await page.evaluate(() => {
-                    document.querySelectorAll('#privacy-radios > tp-yt-paper-radio-button')[2].click()
+                    document.querySelectorAll('#privacy-radios > tp-yt-paper-radio-button')[1].click()
                 })
                 await sleep(1_000 + Math.random() * 2_000);
 
